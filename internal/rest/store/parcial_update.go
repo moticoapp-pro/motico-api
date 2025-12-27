@@ -14,6 +14,22 @@ import (
 	"motico-api/pkg/validator"
 )
 
+// ParcialUpdate
+// @Summary      Partially update store
+// @Description  Update specific fields of a store (partial update)
+// @Tags         stores
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string                          true  "Tenant ID"
+// @Param        id           path      string                          true  "Store ID"
+// @Param        request      body      restentities.PartialUpdateStoreRequest  true  "Store data"
+// @Success      200          {object}  restentities.StoreResponse
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      404          {object}  map[string]interface{}  "Store not found"
+// @Failure      409          {object}  map[string]interface{}  "Store name already exists"
+// @Security     BearerAuth
+// @Router       /stores/{id} [patch]
 func (h *Handler) ParcialUpdate(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

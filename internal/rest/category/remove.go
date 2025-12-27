@@ -10,6 +10,21 @@ import (
 	"motico-api/pkg/context"
 )
 
+// Remove
+// @Summary      Delete category
+// @Description  Delete a category by ID
+// @Tags         categories
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string  true  "Tenant ID"
+// @Param        id           path      string  true  "Category ID"
+// @Success      204          "No Content"
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      404          {object}  map[string]interface{}  "Category not found"
+// @Failure      409          {object}  map[string]interface{}  "Category has associated products"
+// @Security     BearerAuth
+// @Router       /categories/{id} [delete]
 func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

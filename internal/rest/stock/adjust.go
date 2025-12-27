@@ -14,6 +14,21 @@ import (
 	"motico-api/pkg/validator"
 )
 
+// Adjust
+// @Summary      Adjust stock
+// @Description  Add or subtract quantity from stock (amount can be positive or negative)
+// @Tags         stock
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string                    true  "Tenant ID"
+// @Param        id           path      string                    true  "Product ID"
+// @Param        request      body      restentities.AdjustStockRequest  true  "Adjustment data"
+// @Success      200          {object}  restentities.StockResponse
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      409          {object}  map[string]interface{}  "Insufficient stock"
+// @Security     BearerAuth
+// @Router       /products/{id}/stock [patch]
 func (h *Handler) Adjust(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

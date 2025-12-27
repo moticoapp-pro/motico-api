@@ -33,6 +33,7 @@ type DatabaseConfig struct {
 	Password        string `json:"-"` // No serializar en JSON
 	Name            string `json:"name"`
 	SSLMode         string `json:"ssl_mode"`
+	PoolMode        string `json:"pool_mode"` // transaction o session para Supabase
 	MaxConnections  int    `json:"max_connections"`
 	MaxIdleConns    int    `json:"max_idle_connections"`
 	ConnMaxLifetime string `json:"conn_max_lifetime"`
@@ -89,6 +90,7 @@ func Load(configPath string) (*Config, error) {
 	config.Database.User = getEnvOrDefault("DB_USER", config.Database.User)
 	config.Database.Name = getEnvOrDefault("DB_NAME", config.Database.Name)
 	config.Database.SSLMode = getEnvOrDefault("DB_SSLMODE", config.Database.SSLMode)
+	config.Database.PoolMode = getEnvOrDefault("DB_POOL_MODE", config.Database.PoolMode)
 
 	config.JWT.SecretKey = os.Getenv("JWT_SECRET_KEY")
 	if config.JWT.SecretKey == "" {

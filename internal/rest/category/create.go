@@ -13,6 +13,21 @@ import (
 	"motico-api/pkg/context"
 )
 
+// Create
+// @Summary      Create category
+// @Description  Create a new category for the tenant
+// @Tags         categories
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string                        true  "Tenant ID"
+// @Param        request      body      restentities.CreateCategoryRequest  true  "Category data"
+// @Success      201          {object}  restentities.CategoryResponse
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      409          {object}  map[string]interface{}  "Category name already exists"
+// @Failure      500          {object}  map[string]interface{}  "Internal server error"
+// @Security     BearerAuth
+// @Router       /categories [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

@@ -13,6 +13,20 @@ import (
 	"motico-api/pkg/validator"
 )
 
+// Create
+// @Summary      Create product
+// @Description  Create a new product for the tenant
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string                      true  "Tenant ID"
+// @Param        request      body      restentities.CreateProductRequest  true  "Product data"
+// @Success      201         {object}  restentities.ProductResponse
+// @Failure      400         {object}  map[string]interface{}  "Invalid request"
+// @Failure      401         {object}  map[string]interface{}  "Unauthorized"
+// @Failure      409         {object}  map[string]interface{}  "Product SKU already exists"
+// @Security     BearerAuth
+// @Router       /products [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

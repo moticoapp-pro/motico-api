@@ -13,6 +13,20 @@ import (
 	"motico-api/pkg/validator"
 )
 
+// Create
+// @Summary      Create transfer
+// @Description  Create a new transfer between stores
+// @Tags         transfers
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string                      true  "Tenant ID"
+// @Param        request      body      restentities.CreateTransferRequest  true  "Transfer data"
+// @Success      201         {object}  restentities.TransferResponse
+// @Failure      400         {object}  map[string]interface{}  "Invalid request"
+// @Failure      401         {object}  map[string]interface{}  "Unauthorized"
+// @Failure      409         {object}  map[string]interface{}  "Insufficient stock"
+// @Security     BearerAuth
+// @Router       /transfers [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

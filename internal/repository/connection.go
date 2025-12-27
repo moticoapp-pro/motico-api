@@ -5,20 +5,35 @@ import (
 	"fmt"
 	"math"
 	"motico-api/config"
+	"net/url"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func NewConnectionPool(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, error) {
-	connString := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		cfg.Database.User,
-		cfg.Database.Password,
-		cfg.Database.Host,
-		cfg.Database.Port,
-		cfg.Database.Name,
-		cfg.Database.SSLMode,
-	)
+	user := url.UserPassword(cfg.Database.User, cfg.Database.Password)
+
+	// Construir query parameters
+	queryParams := fmt.Sprintf("sslmode=%s", cfg.Database.SSLMode)
+	if cfg.Database.PoolMode != "" {
+		queryParams += fmt.Sprintf("&pool_mode=%s", cfg.Database.PoolMode)
+	}
+	// Usar protocolo simple cuando se usa transaction pooling
+	// El transaction pooler de Supabase no soporta prepared statements
+	if cfg.Database.PoolMode == "transaction" {
+		queryParams += "&prefer_simple_protocol=true"
+	}
+
+	connURL := &url.URL{
+		Scheme:   "postgres",
+		User:     user,
+		Host:     fmt.Sprintf("%s:%s", cfg.Database.Host, cfg.Database.Port),
+		Path:     "/" + cfg.Database.Name,
+		RawQuery: queryParams,
+	}
+
+	connString := connURL.String()
 
 	poolConfig, err := pgxpool.ParseConfig(connString)
 	if err != nil {
@@ -37,6 +52,13 @@ func NewConnectionPool(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, 
 		return nil, fmt.Errorf("error parsing conn_max_lifetime: %w", err)
 	}
 	poolConfig.MaxConnLifetime = connMaxLifetime
+
+	// Usar modo de ejecución sin prepared statements cuando se usa transaction pooling
+	// El transaction pooler de Supabase no soporta prepared statements
+	if cfg.Database.PoolMode == "transaction" {
+		poolConfig.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeExec
+		poolConfig.ConnConfig.StatementCacheCapacity = 0
+	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {

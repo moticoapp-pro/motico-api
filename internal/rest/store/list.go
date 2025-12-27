@@ -10,6 +10,20 @@ import (
 	"motico-api/pkg/context"
 )
 
+// List
+// @Summary      List stores
+// @Description  Get paginated list of stores for the tenant
+// @Tags         stores
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string  true  "Tenant ID"
+// @Param        page         query     int     false "Page number" default(1)
+// @Param        limit        query     int     false "Items per page" default(20)
+// @Success      200          {object}  restentities.ListStoresResponse
+// @Failure      400          {object}  map[string]interface{}  "Invalid tenant ID"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Security     BearerAuth
+// @Router       /stores [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

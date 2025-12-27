@@ -10,6 +10,20 @@ import (
 	"motico-api/pkg/context"
 )
 
+// Remove
+// @Summary      Delete transfer
+// @Description  Delete a transfer by ID (only pending transfers can be deleted)
+// @Tags         transfers
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string  true  "Tenant ID"
+// @Param        id           path      string  true  "Transfer ID"
+// @Success      204          "No Content"
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      404          {object}  map[string]interface{}  "Transfer not found"
+// @Security     BearerAuth
+// @Router       /transfers/{id} [delete]
 func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

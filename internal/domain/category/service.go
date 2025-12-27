@@ -77,7 +77,13 @@ func (s *Service) List(ctx context.Context, tenantID uuid.UUID, limit, offset in
 		offset = 0
 	}
 
-	return s.repo.List(ctx, tenantID, limit, offset)
+	categories, err := s.repo.List(ctx, tenantID, limit, offset)
+	if err != nil {
+		s.logger.Error("Error listing categories", logger.Error(err), logger.String("tenant_id", tenantID.String()))
+		return nil, err
+	}
+
+	return categories, nil
 }
 
 func (s *Service) Update(ctx context.Context, req UpdateRequest) (*entities.Category, error) {

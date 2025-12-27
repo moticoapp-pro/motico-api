@@ -14,6 +14,20 @@ import (
 	"motico-api/pkg/validator"
 )
 
+// Update
+// @Summary      Update stock
+// @Description  Set the stock quantity for a product
+// @Tags         stock
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string                    true  "Tenant ID"
+// @Param        id           path      string                    true  "Product ID"
+// @Param        request      body      restentities.UpdateStockRequest  true  "Stock data"
+// @Success      200          {object}  restentities.StockResponse
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Security     BearerAuth
+// @Router       /products/{id}/stock [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

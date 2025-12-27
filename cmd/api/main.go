@@ -1,3 +1,22 @@
+// @title           Motico API
+// @version         1.0
+// @description     API REST para el manejo de inventarios multi-tenant
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.email  support@motico.com
+
+// @license.name  MIT
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
 package main
 
 import (
@@ -27,6 +46,8 @@ import (
 	"motico-api/pkg/logger"
 
 	_ "github.com/joho/godotenv/autoload"
+	httpSwagger "github.com/swaggo/http-swagger"
+	_ "motico-api/swagger/docs" // Swagger docs
 )
 
 func main() {
@@ -84,11 +105,17 @@ func main() {
 		TransferHandler: transferHandler,
 	})
 
+	// Swagger documentation
+	router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
+	))
+
 	server := &http.Server{
 		Addr:         fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port),
 		Handler:      router,
 		ReadTimeout:  parseDuration(cfg.Server.ReadTimeout),
 		WriteTimeout: parseDuration(cfg.Server.WriteTimeout),
+		IdleTimeout:  120 * time.Second, // Cerrar conexiones idle después de 2 minutos
 	}
 
 	go func() {
@@ -104,11 +131,20 @@ func main() {
 
 	appLogger.Info("Server shutting down")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Cerrar pool de conexiones primero
+	pool.Close()
+	appLogger.Info("Database connection pool closed")
+
+	// Shutdown del servidor con timeout más corto
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		appLogger.Error("Error during server shutdown", logger.Error(err))
+		appLogger.Error("Error during graceful shutdown, forcing close", logger.Error(err))
+		// Si el shutdown graceful falla, cerrar forzadamente
+		if closeErr := server.Close(); closeErr != nil {
+			appLogger.Error("Error forcing server close", logger.Error(closeErr))
+		}
 	}
 
 	appLogger.Info("Server stopped")

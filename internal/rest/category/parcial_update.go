@@ -14,6 +14,22 @@ import (
 	"motico-api/pkg/validator"
 )
 
+// ParcialUpdate
+// @Summary      Partially update category
+// @Description  Update specific fields of a category (partial update)
+// @Tags         categories
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string                              true  "Tenant ID"
+// @Param        id           path      string                              true  "Category ID"
+// @Param        request      body      restentities.PartialUpdateCategoryRequest  true  "Category data"
+// @Success      200          {object}  restentities.CategoryResponse
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      404          {object}  map[string]interface{}  "Category not found"
+// @Failure      409          {object}  map[string]interface{}  "Category name already exists"
+// @Security     BearerAuth
+// @Router       /categories/{id} [patch]
 func (h *Handler) ParcialUpdate(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

@@ -11,6 +11,20 @@ import (
 	"motico-api/pkg/context"
 )
 
+// GetByID
+// @Summary      Get stock by product ID
+// @Description  Get stock information for a specific product
+// @Tags         stock
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string  true  "Tenant ID"
+// @Param        id           path      string  true  "Product ID"
+// @Success      200         {object}  restentities.StockResponse
+// @Failure      400         {object}  map[string]interface{}  "Invalid request"
+// @Failure      401         {object}  map[string]interface{}  "Unauthorized"
+// @Failure      404         {object}  map[string]interface{}  "Stock not found"
+// @Security     BearerAuth
+// @Router       /products/{id}/stock [get]
 func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

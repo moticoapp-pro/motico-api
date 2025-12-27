@@ -14,6 +14,22 @@ import (
 	"motico-api/pkg/validator"
 )
 
+// Update
+// @Summary      Update category
+// @Description  Update an existing category (full update)
+// @Tags         categories
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string                        true  "Tenant ID"
+// @Param        id           path      string                        true  "Category ID"
+// @Param        request      body      restentities.UpdateCategoryRequest  true  "Category data"
+// @Success      200          {object}  restentities.CategoryResponse
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      404          {object}  map[string]interface{}  "Category not found"
+// @Failure      409          {object}  map[string]interface{}  "Category name already exists"
+// @Security     BearerAuth
+// @Router       /categories/{id} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

@@ -1,6 +1,7 @@
 package category
 
 import (
+	"fmt"
 	restentities "motico-api/internal/rest/category/entities"
 	"motico-api/internal/rest/response"
 	"net/http"
@@ -10,6 +11,21 @@ import (
 	"motico-api/pkg/context"
 )
 
+// List
+// @Summary      List categories
+// @Description  Get paginated list of categories for the tenant
+// @Tags         categories
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string  true  "Tenant ID"
+// @Param        page         query     int     false "Page number" default(1)
+// @Param        limit        query     int     false "Items per page" default(20)
+// @Success      200          {object}  restentities.ListCategoriesResponse
+// @Failure      400          {object}  map[string]interface{}  "Invalid tenant ID"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      500          {object}  map[string]interface{}  "Internal server error"
+// @Security     BearerAuth
+// @Router       /categories [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)
@@ -30,7 +46,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	categories, err := h.service.List(r.Context(), tenantID, limit, offset)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, "failed to list categories", nil)
+		// Log del error para debugging (temporal)
+		// En producción, usar el logger del handler
+		response.Error(w, http.StatusInternalServerError, fmt.Sprintf("failed to list categories: %v", err), nil)
 		return
 	}
 

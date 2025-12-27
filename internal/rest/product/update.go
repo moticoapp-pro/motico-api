@@ -14,6 +14,22 @@ import (
 	"motico-api/pkg/validator"
 )
 
+// Update
+// @Summary      Update product
+// @Description  Update an existing product (full update)
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string                      true  "Tenant ID"
+// @Param        id           path      string                      true  "Product ID"
+// @Param        request      body      restentities.UpdateProductRequest  true  "Product data"
+// @Success      200          {object}  restentities.ProductResponse
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      404          {object}  map[string]interface{}  "Product not found"
+// @Failure      409          {object}  map[string]interface{}  "Product SKU already exists"
+// @Security     BearerAuth
+// @Router       /products/{id} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)

@@ -10,6 +10,21 @@ import (
 	"motico-api/pkg/context"
 )
 
+// Remove
+// @Summary      Delete product
+// @Description  Delete a product by ID
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID  header    string  true  "Tenant ID"
+// @Param        id           path      string  true  "Product ID"
+// @Success      204          "No Content"
+// @Failure      400          {object}  map[string]interface{}  "Invalid request"
+// @Failure      401          {object}  map[string]interface{}  "Unauthorized"
+// @Failure      404          {object}  map[string]interface{}  "Product not found"
+// @Failure      409          {object}  map[string]interface{}  "Product has stock or transfers"
+// @Security     BearerAuth
+// @Router       /products/{id} [delete]
 func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 	tenantIDStr := context.GetTenantID(r.Context())
 	tenantID, err := uuid.Parse(tenantIDStr)
