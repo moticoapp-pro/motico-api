@@ -67,7 +67,7 @@ func main() {
 	categoryService := categorydomain.NewService(categoryRepo, cfg, appLogger)
 	productService := productdomain.NewService(productRepo, cfg, appLogger)
 	stockService := stockdomain.NewService(stockRepo, cfg, appLogger)
-	transferService := transferdomain.NewService(transferRepo, stockService, cfg, appLogger)
+	transferService := transferdomain.NewService(transferRepo, stockService, storeRepo, cfg, appLogger)
 
 	categoryHandler := categoryhandler.NewHandler(categoryService, cfg)
 	storeHandler := storehandler.NewHandler(storeService, cfg)

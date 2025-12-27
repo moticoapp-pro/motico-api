@@ -4,6 +4,7 @@ import (
 	"context"
 	"motico-api/config"
 	"motico-api/internal/domain/stock"
+	storedomain "motico-api/internal/domain/store"
 	"motico-api/internal/domain/transfer/entities"
 	"motico-api/pkg/logger"
 
@@ -13,14 +14,16 @@ import (
 type Service struct {
 	repo         Repository
 	stockService *stock.Service
+	storeRepo    storedomain.Repository
 	config       *config.Config
 	logger       logger.Logger
 }
 
-func NewService(repo Repository, stockService *stock.Service, cfg *config.Config, log logger.Logger) *Service {
+func NewService(repo Repository, stockService *stock.Service, storeRepo storedomain.Repository, cfg *config.Config, log logger.Logger) *Service {
 	return &Service{
 		repo:         repo,
 		stockService: stockService,
+		storeRepo:    storeRepo,
 		config:       cfg,
 		logger:       log,
 	}
@@ -47,6 +50,10 @@ type UpdateRequest struct {
 
 func (s *Service) Create(ctx context.Context, req CreateRequest) (*entities.Transfer, error) {
 	if err := s.validateCreateRequest(req); err != nil {
+		return nil, err
+	}
+
+	if err := s.validateStoresBelongToTenant(ctx, req.TenantID, req.FromStoreID, req.ToStoreID); err != nil {
 		return nil, err
 	}
 
@@ -119,6 +126,20 @@ func (s *Service) Update(ctx context.Context, req UpdateRequest) (*entities.Tran
 
 	if req.ToStoreID != nil {
 		transfer.ToStoreID = *req.ToStoreID
+	}
+
+	if req.FromStoreID != nil || req.ToStoreID != nil {
+		fromStoreID := transfer.FromStoreID
+		toStoreID := transfer.ToStoreID
+		if req.FromStoreID != nil {
+			fromStoreID = *req.FromStoreID
+		}
+		if req.ToStoreID != nil {
+			toStoreID = *req.ToStoreID
+		}
+		if err := s.validateStoresBelongToTenant(ctx, req.TenantID, fromStoreID, toStoreID); err != nil {
+			return nil, err
+		}
 	}
 
 	if req.Quantity != nil {
@@ -215,6 +236,26 @@ func (s *Service) validateCreateRequest(req CreateRequest) error {
 
 	if req.Quantity <= 0 {
 		return entities.ErrInvalidQuantity
+	}
+
+	return nil
+}
+
+func (s *Service) validateStoresBelongToTenant(ctx context.Context, tenantID, fromStoreID, toStoreID uuid.UUID) error {
+	fromStore, err := s.storeRepo.GetByID(ctx, tenantID, fromStoreID)
+	if err != nil {
+		return entities.ErrInvalidTransferStores
+	}
+	if fromStore.TenantID != tenantID {
+		return entities.ErrInvalidTransferStores
+	}
+
+	toStore, err := s.storeRepo.GetByID(ctx, tenantID, toStoreID)
+	if err != nil {
+		return entities.ErrInvalidTransferStores
+	}
+	if toStore.TenantID != tenantID {
+		return entities.ErrInvalidTransferStores
 	}
 
 	return nil
