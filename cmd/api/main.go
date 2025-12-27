@@ -12,8 +12,18 @@ import (
 
 	"motico-api/config"
 	authdomain "motico-api/internal/domain/auth"
+	categorydomain "motico-api/internal/domain/category"
+	productdomain "motico-api/internal/domain/product"
+	stockdomain "motico-api/internal/domain/stock"
+	storedomain "motico-api/internal/domain/store"
+	transferdomain "motico-api/internal/domain/transfer"
 	"motico-api/internal/repository"
 	"motico-api/internal/rest"
+	categoryhandler "motico-api/internal/rest/category"
+	producthandler "motico-api/internal/rest/product"
+	stockhandler "motico-api/internal/rest/stock"
+	storehandler "motico-api/internal/rest/store"
+	transferhandler "motico-api/internal/rest/transfer"
 	"motico-api/pkg/logger"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -46,7 +56,33 @@ func main() {
 	appLogger.Info("Database connection established")
 
 	authService := authdomain.NewService(cfg)
-	router := rest.NewRouter(authService)
+
+	storeRepo := repository.NewStoreRepository(pool)
+	categoryRepo := repository.NewCategoryRepository(pool)
+	productRepo := repository.NewProductRepository(pool)
+	stockRepo := repository.NewStockRepository(pool)
+	transferRepo := repository.NewTransferRepository(pool)
+
+	storeService := storedomain.NewService(storeRepo, cfg, appLogger)
+	categoryService := categorydomain.NewService(categoryRepo, cfg, appLogger)
+	productService := productdomain.NewService(productRepo, cfg, appLogger)
+	stockService := stockdomain.NewService(stockRepo, cfg, appLogger)
+	transferService := transferdomain.NewService(transferRepo, stockService, cfg, appLogger)
+
+	categoryHandler := categoryhandler.NewHandler(categoryService, cfg)
+	storeHandler := storehandler.NewHandler(storeService, cfg)
+	productHandler := producthandler.NewHandler(productService, stockService, cfg)
+	stockHandler := stockhandler.NewHandler(stockService, cfg)
+	transferHandler := transferhandler.NewHandler(transferService, cfg)
+
+	router := rest.NewRouter(rest.RouterDependencies{
+		AuthService:     authService,
+		CategoryHandler: categoryHandler,
+		StoreHandler:    storeHandler,
+		ProductHandler:  productHandler,
+		StockHandler:    stockHandler,
+		TransferHandler: transferHandler,
+	})
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port),

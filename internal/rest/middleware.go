@@ -4,14 +4,10 @@ import (
 	"context"
 	authdomain "motico-api/internal/domain/auth"
 	"motico-api/internal/rest/response"
+	ctxpkg "motico-api/pkg/context"
 	"net/http"
 	"strings"
 )
-
-type contextKey string
-
-const TenantIDKey contextKey = "tenant_id"
-const UserIDKey contextKey = "user_id"
 
 func TenantMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +17,7 @@ func TenantMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), TenantIDKey, tenantID)
+		ctx := context.WithValue(r.Context(), ctxpkg.TenantIDKey, tenantID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -48,7 +44,7 @@ func AuthMiddleware(authService *authdomain.Service) func(http.Handler) http.Han
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), UserIDKey, claims.UserID)
+			ctx := context.WithValue(r.Context(), ctxpkg.UserIDKey, claims.UserID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -70,18 +66,4 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 		}()
 		next.ServeHTTP(w, r)
 	})
-}
-
-func GetTenantID(ctx context.Context) string {
-	if tenantID, ok := ctx.Value(TenantIDKey).(string); ok {
-		return tenantID
-	}
-	return ""
-}
-
-func GetUserID(ctx context.Context) string {
-	if userID, ok := ctx.Value(UserIDKey).(string); ok {
-		return userID
-	}
-	return ""
 }
