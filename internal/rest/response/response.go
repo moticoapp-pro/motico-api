@@ -18,7 +18,11 @@ type ErrorDetail struct {
 func JSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		// If encoding fails, we can't send a proper error response
+		// since we've already written the status code
+		_ = err
+	}
 }
 
 func Error(w http.ResponseWriter, status int, message string, details interface{}) {
@@ -35,4 +39,3 @@ func Error(w http.ResponseWriter, status int, message string, details interface{
 func Success(w http.ResponseWriter, status int, data interface{}) {
 	JSON(w, status, data)
 }
-

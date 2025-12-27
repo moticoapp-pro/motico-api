@@ -32,4 +32,3 @@ func NewRouter(authService *authdomain.Service) *chi.Mux {
 
 	return router
 }
-

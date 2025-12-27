@@ -103,4 +103,3 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 	// Por ahora, retornamos error indicando que necesita implementación
 	return nil, errors.New("login implementation pending: database user validation required")
 }
-

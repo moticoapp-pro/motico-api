@@ -4,7 +4,7 @@
 
 ### Reglas de Desarrollo
 
-1. **Confirmación entre Pasos**: 
+1. **Confirmación entre Pasos**:
    - **SIEMPRE** pedir confirmación explícita del usuario antes de pasar al siguiente paso/fase
    - Al completar una fase, mostrar un resumen y preguntar: "¿Procedo con la siguiente fase?"
    - No avanzar automáticamente sin confirmación
@@ -203,11 +203,11 @@ motico-api/
    - `entities/`: Entidades y errores del dominio
    - `repository.go`: Interfaz del repositorio
    - `service.go`: Lógica de negocio
-2. **Separación de Responsabilidades**: 
+2. **Separación de Responsabilidades**:
    - `domain/`: Lógica de negocio pura (sin dependencias externas), incluye errores del dominio
    - `repository/`: Implementaciones de persistencia (sin separación por tecnología)
    - `rest/`: Capa de presentación HTTP (handlers y middlewares juntos para mejor cohesión)
-3. **Idiomático en Go**: 
+3. **Idiomático en Go**:
    - Uso de `internal/` para código privado de la aplicación
    - Uso de `cmd/` para ejecutables
    - Uso de `pkg/` para código reutilizable público (no es una librería, pero puede ser compartido)
@@ -408,7 +408,7 @@ DELETE /api/v1/transfers/{id}                # Eliminar traspaso (solo si está 
 - **DELETE**: Eliminar recursos
 - **Query Parameters**: Para filtros y paginación (`?page=1&limit=20&store_id=xxx`)
 - **Path Parameters**: Para identificar recursos específicos (`{id}`)
-- **Status Codes**: 
+- **Status Codes**:
   - `200 OK`: Operación exitosa
   - `201 Created`: Recurso creado
   - `204 No Content`: Eliminación exitosa
@@ -899,14 +899,14 @@ github.com/golang-jwt/jwt/v5
 
 - **Nombres de paquetes**: En minúsculas, una sola palabra, descriptivos
 - **Interfaces**: Nombres que terminen en `-er` cuando sea apropiado (ej: `Repository`, `Handler`)
-- **Errores**: 
+- **Errores**:
   - Errores del dominio en cada paquete `domain/{entity}/entities/errors.go`
   - Usar `errors.New()` o `fmt.Errorf()` con contexto
   - Variables de error: `var ErrCategoryNotFound = errors.New("category not found")`
-- **Repositorios**: 
+- **Repositorios**:
   - Archivos sin apellido `_repository`: `repository/category.go` implementa `CategoryRepository`
   - Nombres descriptivos que indican la entidad, no la tecnología
-- **Handlers REST**: 
+- **Handlers REST**:
   - Un paquete por recurso: `rest/category/`, `rest/product/`, etc.
   - Un archivo por endpoint **SIN apellidos** (el paquete ya indica el recurso):
     - `list.go`: Listar recursos (GET collection) - Ej: `rest/category/list.go`, `rest/product/list.go`
@@ -963,7 +963,7 @@ github.com/golang-jwt/jwt/v5
     - Configuración de logging (niveles, formatos)
   - Secrets y credenciales: Variables de entorno (`.env`), nunca en config.json
   - Ejemplo: `max_page_size: 100` en config, no `const MaxPageSize = 100` en código
-- **Idiomaticidad**: 
+- **Idiomaticidad**:
   - **SIEMPRE** seguir las convenciones idiomáticas de Go
   - Preferir código claro y explícito sobre "clever" o complejo
   - Documentar funciones públicas con comentarios descriptivos
@@ -979,10 +979,10 @@ github.com/golang-jwt/jwt/v5
   - Mensajes descriptivos: "feat: add category creation handler" en lugar de "update"
   - No acumular cambios grandes en un solo commit
   - Commits frecuentes facilitan rollback y debugging
-- **Inyección de Dependencias**: 
+- **Inyección de Dependencias**:
   - Servicios reciben repositorios y config por constructor: `NewCategoryService(repo, config)`
   - Handlers reciben servicios y config por constructor: `NewCategoryHandler(service, config)`
-- **Configuración**: 
+- **Configuración**:
   - Cargar desde JSON en `config/config.json`
   - Secrets desde variables de entorno (`.env`)
 - **Tests**: Archivos `*_test.go` en el mismo paquete
@@ -1369,4 +1369,3 @@ Después de recibir código, verificar:
 ---
 
 **Fin del Documento**
-

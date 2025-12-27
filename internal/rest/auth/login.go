@@ -2,9 +2,9 @@ package auth
 
 import (
 	"encoding/json"
-	"net/http"
 	authdomain "motico-api/internal/domain/auth"
 	"motico-api/internal/rest/response"
+	"net/http"
 )
 
 type Handler struct {
@@ -46,4 +46,3 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusOK, loginResp)
 }
-

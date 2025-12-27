@@ -4,18 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Server      ServerConfig      `json:"server"`
-	Database    DatabaseConfig    `json:"database"`
-	Pagination  PaginationConfig  `json:"pagination"`
-	Validation  ValidationConfig  `json:"validation"`
-	Logging     LoggingConfig     `json:"logging"`
-	JWT         JWTConfig         `json:"jwt"`
+	Server     ServerConfig     `json:"server"`
+	Database   DatabaseConfig   `json:"database"`
+	Pagination PaginationConfig `json:"pagination"`
+	Validation ValidationConfig `json:"validation"`
+	Logging    LoggingConfig    `json:"logging"`
+	JWT        JWTConfig        `json:"jwt"`
 }
 
 type ServerConfig struct {
@@ -53,20 +54,24 @@ type LoggingConfig struct {
 }
 
 type JWTConfig struct {
-	SecretKey     string `json:"-"`
+	SecretKey      string `json:"-"`
 	ExpirationTime string `json:"expiration_time"`
 }
 
 func Load(configPath string) (*Config, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, fmt.Errorf("error loading .env file: %w", err)
-	}
+	_ = godotenv.Load()
 
-	file, err := os.Open(configPath)
+	cleanPath := filepath.Clean(configPath)
+	file, err := os.Open(cleanPath)
 	if err != nil {
 		return nil, fmt.Errorf("error opening config file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Error closing file, but nothing we can do at this point
+			_ = err
+		}
+	}()
 
 	var config Config
 	decoder := json.NewDecoder(file)
@@ -103,4 +108,3 @@ func getEnvOrDefault(key, defaultValue string) string {
 func (c *DatabaseConfig) GetConnMaxLifetime() (time.Duration, error) {
 	return time.ParseDuration(c.ConnMaxLifetime)
 }
-

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"math"
 	"motico-api/config"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,8 +25,12 @@ func NewConnectionPool(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, 
 		return nil, fmt.Errorf("error parsing connection string: %w", err)
 	}
 
-	poolConfig.MaxConns = int32(cfg.Database.MaxConnections)
-	poolConfig.MaxIdleConns = int32(cfg.Database.MaxIdleConns)
+	if cfg.Database.MaxConnections < 0 || cfg.Database.MaxConnections > math.MaxInt32 {
+		return nil, fmt.Errorf("max_connections value %d is out of valid range (0-%d)", cfg.Database.MaxConnections, math.MaxInt32)
+	}
+	// nolint:gosec // G115: Safe conversion - validated above to be within int32 range
+	maxConns := int32(cfg.Database.MaxConnections)
+	poolConfig.MaxConns = maxConns
 
 	connMaxLifetime, err := cfg.Database.GetConnMaxLifetime()
 	if err != nil {
@@ -45,4 +50,3 @@ func NewConnectionPool(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, 
 
 	return pool, nil
 }
-

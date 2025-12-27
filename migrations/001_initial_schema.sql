@@ -79,4 +79,3 @@ CREATE INDEX IF NOT EXISTS idx_categories_tenant ON categories(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_stores_tenant ON stores(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_transfers_tenant ON transfers(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_transfers_product ON transfers(product_id);
-

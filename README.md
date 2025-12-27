@@ -110,4 +110,3 @@ golangci-lint run ./...
 ## Licencia
 
 MIT
-

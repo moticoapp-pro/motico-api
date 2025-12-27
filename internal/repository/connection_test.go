@@ -33,4 +33,3 @@ func TestConnectionPool(t *testing.T) {
 		t.Errorf("Expected 1, got %d", result)
 	}
 }
-

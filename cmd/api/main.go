@@ -29,7 +29,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating logger: %v", err)
 	}
-	defer appLogger.Sync()
+	defer func() {
+		if err := appLogger.Sync(); err != nil {
+			log.Printf("Error syncing logger: %v", err)
+		}
+	}()
 
 	ctx := context.Background()
 
@@ -81,4 +85,3 @@ func parseDuration(s string) time.Duration {
 	}
 	return d
 }
-

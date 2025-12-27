@@ -2,9 +2,9 @@ package rest
 
 import (
 	"context"
-	"net/http"
 	authdomain "motico-api/internal/domain/auth"
 	"motico-api/internal/rest/response"
+	"net/http"
 	"strings"
 )
 
@@ -85,4 +85,3 @@ func GetUserID(ctx context.Context) string {
 	}
 	return ""
 }
-
