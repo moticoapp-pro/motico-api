@@ -1,7 +1,8 @@
 package stock
 
 import (
-	"motico-api/internal/domain/stock/entities"
+	productentities "motico-api/internal/domain/product/entities"
+	stockentities "motico-api/internal/domain/stock/entities"
 	"motico-api/internal/rest/response"
 	restentities "motico-api/internal/rest/stock/entities"
 	"net/http"
@@ -42,7 +43,7 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	stock, err := h.service.GetByProductID(r.Context(), tenantID, productID)
 	if err != nil {
-		if err == entities.ErrStockNotFound {
+		if err == stockentities.ErrStockNotFound {
 			response.Error(w, http.StatusNotFound, "stock not found", nil)
 			return
 		}
@@ -50,7 +51,18 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, http.StatusOK, restentities.StockResponse{
+	// Get product information
+	product, err := h.productService.GetByID(r.Context(), tenantID, productID)
+	if err != nil {
+		if err == productentities.ErrProductNotFound {
+			response.Error(w, http.StatusNotFound, "product not found", nil)
+			return
+		}
+		response.Error(w, http.StatusInternalServerError, "failed to get product", nil)
+		return
+	}
+
+	stockResponse := restentities.StockResponse{
 		ID:                stock.ID,
 		TenantID:          stock.TenantID,
 		ProductID:         stock.ProductID,
@@ -58,5 +70,19 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		ReservedQuantity:  stock.ReservedQuantity,
 		AvailableQuantity: stock.AvailableQuantity(),
 		UpdatedAt:         stock.UpdatedAt,
-	})
+		Product: &restentities.ProductInfo{
+			ID:          product.ID,
+			TenantID:    product.TenantID,
+			StoreID:     product.StoreID,
+			CategoryID:  product.CategoryID,
+			Name:        product.Name,
+			Description: product.Description,
+			SKU:         product.SKU,
+			Price:       product.Price,
+			CreatedAt:   product.CreatedAt,
+			UpdatedAt:   product.UpdatedAt,
+		},
+	}
+
+	response.JSON(w, http.StatusOK, stockResponse)
 }

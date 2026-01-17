@@ -1,0 +1,1741 @@
+basePath: /api/v1
+definitions:
+  internal_rest_auth.LoginRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  internal_rest_auth.LoginResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  motico-api_internal_rest_category_entities.CategoryResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  motico-api_internal_rest_category_entities.CreateCategoryRequest:
+    properties:
+      description:
+        maxLength: 1000
+        type: string
+      name:
+        maxLength: 255
+        type: string
+    required:
+    - name
+    type: object
+  motico-api_internal_rest_category_entities.ListCategoriesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/motico-api_internal_rest_category_entities.CategoryResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/motico-api_internal_rest_category_entities.PaginationInfo'
+    type: object
+  motico-api_internal_rest_category_entities.PaginationInfo:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  motico-api_internal_rest_category_entities.PartialUpdateCategoryRequest:
+    properties:
+      description:
+        maxLength: 1000
+        type: string
+      name:
+        maxLength: 255
+        type: string
+    type: object
+  motico-api_internal_rest_category_entities.UpdateCategoryRequest:
+    properties:
+      description:
+        maxLength: 1000
+        type: string
+      name:
+        maxLength: 255
+        type: string
+    required:
+    - name
+    type: object
+  motico-api_internal_rest_product_entities.CreateProductRequest:
+    properties:
+      category_id:
+        type: string
+      description:
+        maxLength: 1000
+        type: string
+      name:
+        maxLength: 255
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 100
+        type: string
+      store_id:
+        type: string
+    required:
+    - category_id
+    - name
+    - store_id
+    type: object
+  motico-api_internal_rest_product_entities.ListProductsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/motico-api_internal_rest_product_entities.ProductResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/motico-api_internal_rest_product_entities.PaginationInfo'
+    type: object
+  motico-api_internal_rest_product_entities.PaginationInfo:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  motico-api_internal_rest_product_entities.PartialUpdateProductRequest:
+    properties:
+      category_id:
+        type: string
+      description:
+        maxLength: 1000
+        type: string
+      name:
+        maxLength: 255
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 100
+        type: string
+      store_id:
+        type: string
+    type: object
+  motico-api_internal_rest_product_entities.ProductResponse:
+    properties:
+      category_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      sku:
+        type: string
+      stock:
+        $ref: '#/definitions/motico-api_internal_rest_product_entities.StockInfo'
+      store_id:
+        type: string
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  motico-api_internal_rest_product_entities.StockInfo:
+    properties:
+      available_quantity:
+        type: integer
+      quantity:
+        type: integer
+      reserved_quantity:
+        type: integer
+    type: object
+  motico-api_internal_rest_product_entities.UpdateProductRequest:
+    properties:
+      category_id:
+        type: string
+      description:
+        maxLength: 1000
+        type: string
+      name:
+        maxLength: 255
+        type: string
+      price:
+        minimum: 0
+        type: number
+      sku:
+        maxLength: 100
+        type: string
+      store_id:
+        type: string
+    required:
+    - category_id
+    - name
+    - store_id
+    type: object
+  motico-api_internal_rest_stock_entities.AdjustStockRequest:
+    properties:
+      amount:
+        type: integer
+    required:
+    - amount
+    type: object
+  motico-api_internal_rest_stock_entities.StockResponse:
+    properties:
+      available_quantity:
+        type: integer
+      id:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        type: integer
+      reserved_quantity:
+        type: integer
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  motico-api_internal_rest_stock_entities.UpdateStockRequest:
+    properties:
+      quantity:
+        minimum: 0
+        type: integer
+    required:
+    - quantity
+    type: object
+  motico-api_internal_rest_store_entities.CreateStoreRequest:
+    properties:
+      address:
+        type: string
+      name:
+        maxLength: 255
+        type: string
+    required:
+    - name
+    type: object
+  motico-api_internal_rest_store_entities.ListStoresResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/motico-api_internal_rest_store_entities.StoreResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/motico-api_internal_rest_store_entities.PaginationInfo'
+    type: object
+  motico-api_internal_rest_store_entities.PaginationInfo:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  motico-api_internal_rest_store_entities.PartialUpdateStoreRequest:
+    properties:
+      address:
+        type: string
+      name:
+        maxLength: 255
+        type: string
+    type: object
+  motico-api_internal_rest_store_entities.StoreResponse:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  motico-api_internal_rest_store_entities.UpdateStoreRequest:
+    properties:
+      address:
+        type: string
+      name:
+        maxLength: 255
+        type: string
+    required:
+    - name
+    type: object
+  motico-api_internal_rest_transfer_entities.CreateTransferRequest:
+    properties:
+      from_store_id:
+        type: string
+      notes:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        type: integer
+      to_store_id:
+        type: string
+    required:
+    - from_store_id
+    - product_id
+    - quantity
+    - to_store_id
+    type: object
+  motico-api_internal_rest_transfer_entities.ListTransfersResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/motico-api_internal_rest_transfer_entities.TransferResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/motico-api_internal_rest_transfer_entities.PaginationInfo'
+    type: object
+  motico-api_internal_rest_transfer_entities.PaginationInfo:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  motico-api_internal_rest_transfer_entities.TransferResponse:
+    properties:
+      created_at:
+        type: string
+      from_store_id:
+        type: string
+      id:
+        type: string
+      notes:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        type: integer
+      status:
+        type: string
+      tenant_id:
+        type: string
+      to_store_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  motico-api_internal_rest_transfer_entities.UpdateTransferRequest:
+    properties:
+      from_store_id:
+        type: string
+      notes:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        type: integer
+      to_store_id:
+        type: string
+    required:
+    - from_store_id
+    - product_id
+    - quantity
+    - to_store_id
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@motico.com
+    name: API Support
+  description: API REST para el manejo de inventarios multi-tenant
+  license:
+    name: MIT
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Motico API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_rest_auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully authenticated
+          schema:
+            $ref: '#/definitions/internal_rest_auth.LoginResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login user
+      tags:
+      - auth
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of categories for the tenant
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_category_entities.ListCategoriesResponse'
+        "400":
+          description: Invalid tenant ID
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new category for the tenant
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Category data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_category_entities.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_category_entities.CategoryResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Category name already exists
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create category
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a category by ID
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Category not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Category has associated products
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete category
+      tags:
+      - categories
+    get:
+      consumes:
+      - application/json
+      description: Get a specific category by its ID
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_category_entities.CategoryResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Category not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get category by ID
+      tags:
+      - categories
+    patch:
+      consumes:
+      - application/json
+      description: Update specific fields of a category (partial update)
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Category data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_category_entities.PartialUpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_category_entities.CategoryResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Category not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Category name already exists
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Partially update category
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Update an existing category (full update)
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Category data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_category_entities.UpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_category_entities.CategoryResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Category not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Category name already exists
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update category
+      tags:
+      - categories
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of products for the tenant
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by store ID
+        in: query
+        name: store_id
+        type: string
+      - description: Filter by category ID
+        in: query
+        name: category_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_product_entities.ListProductsResponse'
+        "400":
+          description: Invalid tenant ID
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product for the tenant
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Product data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_product_entities.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_product_entities.ProductResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Product SKU already exists
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create product
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a product by ID
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Product not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Product has stock or transfers
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete product
+      tags:
+      - products
+    get:
+      consumes:
+      - application/json
+      description: Get a specific product by its ID
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_product_entities.ProductResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Product not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get product by ID
+      tags:
+      - products
+    patch:
+      consumes:
+      - application/json
+      description: Update specific fields of a product (partial update)
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_product_entities.PartialUpdateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_product_entities.ProductResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Product not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Product SKU already exists
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Partially update product
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product (full update)
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_product_entities.UpdateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_product_entities.ProductResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Product not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Product SKU already exists
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update product
+      tags:
+      - products
+  /products/{id}/stock:
+    get:
+      consumes:
+      - application/json
+      description: Get stock information for a specific product
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_stock_entities.StockResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Stock not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get stock by product ID
+      tags:
+      - stock
+    patch:
+      consumes:
+      - application/json
+      description: Add or subtract quantity from stock (amount can be positive or
+        negative)
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Adjustment data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_stock_entities.AdjustStockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_stock_entities.StockResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Insufficient stock
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Adjust stock
+      tags:
+      - stock
+    put:
+      consumes:
+      - application/json
+      description: Set the stock quantity for a product
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Stock data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_stock_entities.UpdateStockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_stock_entities.StockResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update stock
+      tags:
+      - stock
+  /stores:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of stores for the tenant
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_store_entities.ListStoresResponse'
+        "400":
+          description: Invalid tenant ID
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List stores
+      tags:
+      - stores
+    post:
+      consumes:
+      - application/json
+      description: Create a new store for the tenant
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Store data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_store_entities.CreateStoreRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_store_entities.StoreResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Store name already exists
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create store
+      tags:
+      - stores
+  /stores/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a store by ID
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Store not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Store has associated products
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete store
+      tags:
+      - stores
+    get:
+      consumes:
+      - application/json
+      description: Get a specific store by its ID
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_store_entities.StoreResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Store not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get store by ID
+      tags:
+      - stores
+    patch:
+      consumes:
+      - application/json
+      description: Update specific fields of a store (partial update)
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Store data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_store_entities.PartialUpdateStoreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_store_entities.StoreResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Store not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Store name already exists
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Partially update store
+      tags:
+      - stores
+    put:
+      consumes:
+      - application/json
+      description: Update an existing store (full update)
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Store data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_store_entities.UpdateStoreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_store_entities.StoreResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Store not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Store name already exists
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update store
+      tags:
+      - stores
+  /transfers:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of transfers for the tenant
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by status (pending, completed, cancelled)
+        in: query
+        name: status
+        type: string
+      - description: Filter by store ID
+        in: query
+        name: store_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_transfer_entities.ListTransfersResponse'
+        "400":
+          description: Invalid tenant ID
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List transfers
+      tags:
+      - transfers
+    post:
+      consumes:
+      - application/json
+      description: Create a new transfer between stores
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Transfer data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_transfer_entities.CreateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_transfer_entities.TransferResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Insufficient stock
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create transfer
+      tags:
+      - transfers
+  /transfers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a transfer by ID (only pending transfers can be deleted)
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Transfer not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete transfer
+      tags:
+      - transfers
+    get:
+      consumes:
+      - application/json
+      description: Get a specific transfer by its ID
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_transfer_entities.TransferResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Transfer not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get transfer by ID
+      tags:
+      - transfers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing transfer (only pending transfers can be updated)
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Transfer data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/motico-api_internal_rest_transfer_entities.UpdateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_transfer_entities.TransferResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Transfer not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update transfer
+      tags:
+      - transfers
+  /transfers/{id}/cancel:
+    patch:
+      consumes:
+      - application/json
+      description: Cancel a transfer and release reserved stock
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_transfer_entities.TransferResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Transfer not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel transfer
+      tags:
+      - transfers
+  /transfers/{id}/complete:
+    patch:
+      consumes:
+      - application/json
+      description: Mark a transfer as completed and update stock
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/motico-api_internal_rest_transfer_entities.TransferResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Transfer not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Complete transfer
+      tags:
+      - transfers
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -62,10 +63,24 @@ type JWTConfig struct {
 func Load(configPath string) (*Config, error) {
 	_ = godotenv.Load()
 
+	// Try to find the config file in multiple locations
 	cleanPath := filepath.Clean(configPath)
 	file, err := os.Open(cleanPath)
 	if err != nil {
-		return nil, fmt.Errorf("error opening config file: %w", err)
+		// If the relative path doesn't work, try to find it from the project root
+		// Get the directory of this source file
+		_, filename, _, _ := runtime.Caller(0)
+		packageDir := filepath.Dir(filename)
+		// Try relative to the config package directory (which is in the project root)
+		projectRoot := filepath.Dir(packageDir)
+		altPath := filepath.Join(projectRoot, cleanPath)
+		
+		var altErr error
+		file, altErr = os.Open(altPath)
+		if altErr != nil {
+			return nil, fmt.Errorf("error opening config file: tried %s and %s: %w", cleanPath, altPath, err)
+		}
+		cleanPath = altPath
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
