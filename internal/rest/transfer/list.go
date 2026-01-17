@@ -4,11 +4,12 @@ import (
 	"motico-api/internal/domain/transfer/entities"
 	"motico-api/internal/rest/response"
 	restentities "motico-api/internal/rest/transfer/entities"
+	"motico-api/pkg/context"
+	"motico-api/pkg/logger"
 	"net/http"
 	"strconv"
 
 	"github.com/google/uuid"
-	"motico-api/pkg/context"
 )
 
 // List
@@ -61,11 +62,25 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	}
 	offset := (page - 1) * limit
 
+	h.logger.Info("Listing transfers",
+		logger.String("tenant_id", tenantID.String()),
+		logger.Int("page", page),
+		logger.Int("limit", limit),
+		logger.Any("status", status),
+		logger.Any("store_id", storeID))
+
 	transfers, err := h.service.List(r.Context(), tenantID, status, storeID, limit, offset)
 	if err != nil {
+		h.logger.Error("Failed to list transfers", logger.Error(err), logger.String("tenant_id", tenantID.String()))
 		response.Error(w, http.StatusInternalServerError, "failed to list transfers", nil)
 		return
 	}
+
+	h.logger.Info("Transfers listed successfully",
+		logger.String("tenant_id", tenantID.String()),
+		logger.Int("count", len(transfers)),
+		logger.Int("page", page),
+		logger.Int("limit", limit))
 
 	responses := make([]restentities.TransferResponse, len(transfers))
 	for i, t := range transfers {

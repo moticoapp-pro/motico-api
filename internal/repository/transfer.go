@@ -32,7 +32,7 @@ func (r *transferRepository) Create(ctx context.Context, transfer *entities.Tran
 		transfer.FromStoreID,
 		transfer.ToStoreID,
 		transfer.Quantity,
-		transfer.Status,
+		string(transfer.Status),
 		transfer.Notes,
 	).Scan(
 		&transfer.ID,
@@ -87,7 +87,7 @@ func (r *transferRepository) List(ctx context.Context, tenantID uuid.UUID, statu
 
 	if status != nil {
 		query += ` AND status = $` + fmt.Sprintf("%d", argPos)
-		args = append(args, *status)
+		args = append(args, string(*status))
 		argPos++
 	}
 
@@ -142,7 +142,7 @@ func (r *transferRepository) Update(ctx context.Context, transfer *entities.Tran
 		transfer.FromStoreID,
 		transfer.ToStoreID,
 		transfer.Quantity,
-		transfer.Status,
+		string(transfer.Status),
 		transfer.Notes,
 		transfer.ID,
 		transfer.TenantID,

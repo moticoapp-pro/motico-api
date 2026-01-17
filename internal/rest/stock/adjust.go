@@ -58,6 +58,7 @@ func (h *Handler) Adjust(w http.ResponseWriter, r *http.Request) {
 	adjustReq := stock.AdjustRequest{
 		TenantID:  tenantID,
 		ProductID: productID,
+		StoreID:   req.StoreID,
 		Amount:    req.Amount,
 	}
 
@@ -83,6 +84,7 @@ func (h *Handler) Adjust(w http.ResponseWriter, r *http.Request) {
 		ID:                stock.ID,
 		TenantID:          stock.TenantID,
 		ProductID:         stock.ProductID,
+		StoreID:           stock.StoreID,
 		Quantity:          stock.Quantity,
 		ReservedQuantity:  stock.ReservedQuantity,
 		AvailableQuantity: stock.AvailableQuantity(),

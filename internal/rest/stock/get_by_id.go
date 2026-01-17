@@ -14,12 +14,14 @@ import (
 
 // GetByID
 // @Summary      Get stock by product ID
-// @Description  Get stock information for a specific product
+// @Description  Get stock information for a specific product. Returns total + breakdown by store, or specific store if store_id query param is provided
 // @Tags         stock
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID  header    string  true  "Tenant ID"
 // @Param        id           path      string  true  "Product ID"
+// @Param        store_id     query     string  false "Store ID to filter by"
+// @Success      200         {object}  restentities.StockTotalResponse
 // @Success      200         {object}  restentities.StockResponse
 // @Failure      400         {object}  map[string]interface{}  "Invalid request"
 // @Failure      401         {object}  map[string]interface{}  "Unauthorized"
@@ -41,7 +43,61 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stock, err := h.service.GetByProductID(r.Context(), tenantID, productID)
+	if storeIDStr := r.URL.Query().Get("store_id"); storeIDStr != "" {
+		storeID, err := uuid.Parse(storeIDStr)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "invalid store ID", nil)
+			return
+		}
+
+		stock, err := h.service.GetByProductIDAndStoreID(r.Context(), tenantID, productID, storeID)
+		if err != nil {
+			if err == stockentities.ErrStockNotFound {
+				response.Error(w, http.StatusNotFound, "stock not found", nil)
+				return
+			}
+			response.Error(w, http.StatusInternalServerError, "failed to get stock", nil)
+			return
+		}
+
+		product, err := h.productService.GetByID(r.Context(), tenantID, productID)
+		if err != nil {
+			if err == productentities.ErrProductNotFound {
+				response.Error(w, http.StatusNotFound, "product not found", nil)
+				return
+			}
+			response.Error(w, http.StatusInternalServerError, "failed to get product", nil)
+			return
+		}
+
+		stockResponse := restentities.StockResponse{
+			ID:                stock.ID,
+			TenantID:          stock.TenantID,
+			ProductID:         stock.ProductID,
+			StoreID:           stock.StoreID,
+			Quantity:          stock.Quantity,
+			ReservedQuantity:  stock.ReservedQuantity,
+			AvailableQuantity: stock.AvailableQuantity(),
+			UpdatedAt:         stock.UpdatedAt,
+			Product: &restentities.ProductInfo{
+				ID:          product.ID,
+				TenantID:    product.TenantID,
+				StoreID:     product.StoreID,
+				CategoryID:  product.CategoryID,
+				Name:        product.Name,
+				Description: product.Description,
+				SKU:         product.SKU,
+				Price:       product.Price,
+				CreatedAt:   product.CreatedAt,
+				UpdatedAt:   product.UpdatedAt,
+			},
+		}
+
+		response.JSON(w, http.StatusOK, stockResponse)
+		return
+	}
+
+	stockTotal, err := h.service.GetByProductID(r.Context(), tenantID, productID)
 	if err != nil {
 		if err == stockentities.ErrStockNotFound {
 			response.Error(w, http.StatusNotFound, "stock not found", nil)
@@ -51,7 +107,6 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get product information
 	product, err := h.productService.GetByID(r.Context(), tenantID, productID)
 	if err != nil {
 		if err == productentities.ErrProductNotFound {
@@ -62,14 +117,23 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stockResponse := restentities.StockResponse{
-		ID:                stock.ID,
-		TenantID:          stock.TenantID,
-		ProductID:         stock.ProductID,
-		Quantity:          stock.Quantity,
-		ReservedQuantity:  stock.ReservedQuantity,
-		AvailableQuantity: stock.AvailableQuantity(),
-		UpdatedAt:         stock.UpdatedAt,
+	stores := make([]restentities.StockByStore, len(stockTotal.Stores))
+	for i, s := range stockTotal.Stores {
+		stores[i] = restentities.StockByStore{
+			StoreID:           s.StoreID,
+			Quantity:          s.Quantity,
+			ReservedQuantity:  s.ReservedQuantity,
+			AvailableQuantity: s.AvailableQuantity(),
+		}
+	}
+
+	stockTotalResponse := restentities.StockTotalResponse{
+		TenantID:          stockTotal.TenantID,
+		ProductID:         stockTotal.ProductID,
+		TotalQuantity:     stockTotal.TotalQuantity,
+		TotalReserved:     stockTotal.TotalReserved,
+		AvailableQuantity: stockTotal.AvailableQuantity,
+		Stores:            stores,
 		Product: &restentities.ProductInfo{
 			ID:          product.ID,
 			TenantID:    product.TenantID,
@@ -84,5 +148,5 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	response.JSON(w, http.StatusOK, stockResponse)
+	response.JSON(w, http.StatusOK, stockTotalResponse)
 }

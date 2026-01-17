@@ -26,21 +26,55 @@ func NewService(repo Repository, cfg *config.Config, log logger.Logger) *Service
 type UpdateRequest struct {
 	TenantID  uuid.UUID
 	ProductID uuid.UUID
+	StoreID   uuid.UUID
 	Quantity  int
 }
 
 type AdjustRequest struct {
 	TenantID  uuid.UUID
 	ProductID uuid.UUID
+	StoreID   uuid.UUID
 	Amount    int
 }
 
-func (s *Service) GetByProductID(ctx context.Context, tenantID, productID uuid.UUID) (*entities.Stock, error) {
-	stock, err := s.repo.GetByProductID(ctx, tenantID, productID)
+func (s *Service) GetByProductID(ctx context.Context, tenantID, productID uuid.UUID) (*entities.StockTotal, error) {
+	stocks, err := s.repo.ListByProductID(ctx, tenantID, productID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(stocks) == 0 {
+		return nil, entities.ErrStockNotFound
+	}
+
+	total := &entities.StockTotal{
+		TenantID:      tenantID,
+		ProductID:     productID,
+		TotalQuantity: 0,
+		TotalReserved: 0,
+		Stores:        make([]entities.Stock, len(stocks)),
+	}
+
+	for i, stock := range stocks {
+		total.TotalQuantity += stock.Quantity
+		total.TotalReserved += stock.ReservedQuantity
+		total.Stores[i] = *stock
+	}
+
+	total.AvailableQuantity = total.CalculateAvailable()
+	return total, nil
+}
+
+func (s *Service) GetByProductIDAndStoreID(ctx context.Context, tenantID, productID, storeID uuid.UUID) (*entities.Stock, error) {
+	stock, err := s.repo.GetByProductIDAndStoreID(ctx, tenantID, productID, storeID)
 	if err != nil {
 		return nil, err
 	}
 	return stock, nil
+}
+
+func (s *Service) ListByProductID(ctx context.Context, tenantID, productID uuid.UUID) ([]*entities.Stock, error) {
+	return s.repo.ListByProductID(ctx, tenantID, productID)
 }
 
 func (s *Service) Update(ctx context.Context, req UpdateRequest) (*entities.Stock, error) {
@@ -48,12 +82,13 @@ func (s *Service) Update(ctx context.Context, req UpdateRequest) (*entities.Stoc
 		return nil, entities.ErrInvalidQuantity
 	}
 
-	stock, err := s.repo.GetByProductID(ctx, req.TenantID, req.ProductID)
+	stock, err := s.repo.GetByProductIDAndStoreID(ctx, req.TenantID, req.ProductID, req.StoreID)
 	if err != nil {
 		if err == entities.ErrStockNotFound {
 			stock = &entities.Stock{
 				TenantID:         req.TenantID,
 				ProductID:        req.ProductID,
+				StoreID:          req.StoreID,
 				Quantity:         req.Quantity,
 				ReservedQuantity: 0,
 			}
@@ -78,7 +113,7 @@ func (s *Service) Update(ctx context.Context, req UpdateRequest) (*entities.Stoc
 }
 
 func (s *Service) Adjust(ctx context.Context, req AdjustRequest) (*entities.Stock, error) {
-	stock, err := s.repo.GetByProductID(ctx, req.TenantID, req.ProductID)
+	stock, err := s.repo.GetByProductIDAndStoreID(ctx, req.TenantID, req.ProductID, req.StoreID)
 	if err != nil {
 		if err == entities.ErrStockNotFound {
 			if req.Amount < 0 {
@@ -87,6 +122,7 @@ func (s *Service) Adjust(ctx context.Context, req AdjustRequest) (*entities.Stoc
 			stock = &entities.Stock{
 				TenantID:         req.TenantID,
 				ProductID:        req.ProductID,
+				StoreID:          req.StoreID,
 				Quantity:         req.Amount,
 				ReservedQuantity: 0,
 			}
@@ -115,18 +151,18 @@ func (s *Service) Adjust(ctx context.Context, req AdjustRequest) (*entities.Stoc
 	return stock, nil
 }
 
-func (s *Service) Reserve(ctx context.Context, tenantID, productID uuid.UUID, quantity int) error {
+func (s *Service) Reserve(ctx context.Context, tenantID, productID, storeID uuid.UUID, quantity int) error {
 	if quantity <= 0 {
 		return entities.ErrInvalidQuantity
 	}
 
-	return s.repo.Reserve(ctx, tenantID, productID, quantity)
+	return s.repo.Reserve(ctx, tenantID, productID, storeID, quantity)
 }
 
-func (s *Service) Release(ctx context.Context, tenantID, productID uuid.UUID, quantity int) error {
+func (s *Service) Release(ctx context.Context, tenantID, productID, storeID uuid.UUID, quantity int) error {
 	if quantity <= 0 {
 		return entities.ErrInvalidQuantity
 	}
 
-	return s.repo.Release(ctx, tenantID, productID, quantity)
+	return s.repo.Release(ctx, tenantID, productID, storeID, quantity)
 }

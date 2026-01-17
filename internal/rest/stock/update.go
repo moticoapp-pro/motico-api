@@ -57,6 +57,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	updateReq := stock.UpdateRequest{
 		TenantID:  tenantID,
 		ProductID: productID,
+		StoreID:   req.StoreID,
 		Quantity:  req.Quantity,
 	}
 
@@ -78,6 +79,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		ID:                stock.ID,
 		TenantID:          stock.TenantID,
 		ProductID:         stock.ProductID,
+		StoreID:           stock.StoreID,
 		Quantity:          stock.Quantity,
 		ReservedQuantity:  stock.ReservedQuantity,
 		AvailableQuantity: stock.AvailableQuantity(),

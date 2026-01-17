@@ -45,9 +45,10 @@ import (
 	transferhandler "motico-api/internal/rest/transfer"
 	"motico-api/pkg/logger"
 
+	_ "motico-api/swagger/docs" // Swagger docs
+
 	_ "github.com/joho/godotenv/autoload"
 	httpSwagger "github.com/swaggo/http-swagger"
-	_ "motico-api/swagger/docs" // Swagger docs
 )
 
 func main() {
@@ -93,8 +94,8 @@ func main() {
 	categoryHandler := categoryhandler.NewHandler(categoryService, cfg)
 	storeHandler := storehandler.NewHandler(storeService, cfg)
 	productHandler := producthandler.NewHandler(productService, stockService, cfg)
-	stockHandler := stockhandler.NewHandler(stockService, cfg)
-	transferHandler := transferhandler.NewHandler(transferService, cfg)
+	stockHandler := stockhandler.NewHandler(stockService, productService, cfg)
+	transferHandler := transferhandler.NewHandler(transferService, cfg, appLogger)
 
 	router := rest.NewRouter(rest.RouterDependencies{
 		AuthService:     authService,

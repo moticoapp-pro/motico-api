@@ -50,7 +50,7 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stockInfo, _ := h.stockService.GetByProductID(r.Context(), tenantID, id)
+	stockInfo, _ := h.stockService.GetByProductIDAndStoreID(r.Context(), tenantID, id, product.StoreID)
 	productResponse := restentities.ProductResponse{
 		ID:          product.ID,
 		TenantID:    product.TenantID,

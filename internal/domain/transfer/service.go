@@ -4,6 +4,7 @@ import (
 	"context"
 	"motico-api/config"
 	"motico-api/internal/domain/stock"
+	stockentities "motico-api/internal/domain/stock/entities"
 	storedomain "motico-api/internal/domain/store"
 	"motico-api/internal/domain/transfer/entities"
 	"motico-api/pkg/logger"
@@ -50,20 +51,47 @@ type UpdateRequest struct {
 
 func (s *Service) Create(ctx context.Context, req CreateRequest) (*entities.Transfer, error) {
 	if err := s.validateCreateRequest(req); err != nil {
+		s.logger.Warn("Create transfer request validation failed",
+			logger.Error(err),
+			logger.String("tenant_id", req.TenantID.String()),
+			logger.String("product_id", req.ProductID.String()))
 		return nil, err
 	}
 
 	if err := s.validateStoresBelongToTenant(ctx, req.TenantID, req.FromStoreID, req.ToStoreID); err != nil {
+		s.logger.Warn("Stores validation failed",
+			logger.Error(err),
+			logger.String("tenant_id", req.TenantID.String()),
+			logger.String("from_store_id", req.FromStoreID.String()),
+			logger.String("to_store_id", req.ToStoreID.String()))
 		return nil, err
 	}
 
-	stock, err := s.stockService.GetByProductID(ctx, req.TenantID, req.ProductID)
+	stock, err := s.stockService.GetByProductIDAndStoreID(ctx, req.TenantID, req.ProductID, req.FromStoreID)
 	if err != nil {
+		if err == stockentities.ErrStockNotFound {
+			s.logger.Warn("Stock not found for product in store",
+				logger.String("tenant_id", req.TenantID.String()),
+				logger.String("product_id", req.ProductID.String()),
+				logger.String("store_id", req.FromStoreID.String()))
+			return nil, entities.ErrInsufficientStock
+		}
+		s.logger.Error("Failed to get stock for product in store",
+			logger.Error(err),
+			logger.String("tenant_id", req.TenantID.String()),
+			logger.String("product_id", req.ProductID.String()),
+			logger.String("store_id", req.FromStoreID.String()))
 		return nil, err
 	}
 
 	available := stock.AvailableQuantity()
 	if available < req.Quantity {
+		s.logger.Warn("Insufficient stock for transfer",
+			logger.String("tenant_id", req.TenantID.String()),
+			logger.String("product_id", req.ProductID.String()),
+			logger.String("store_id", req.FromStoreID.String()),
+			logger.Int("available", available),
+			logger.Int("requested", req.Quantity))
 		return nil, entities.ErrInsufficientStock
 	}
 
@@ -78,18 +106,53 @@ func (s *Service) Create(ctx context.Context, req CreateRequest) (*entities.Tran
 	}
 
 	if err := s.repo.Create(ctx, transfer); err != nil {
+		s.logger.Error("Failed to create transfer in repository",
+			logger.Error(err),
+			logger.String("tenant_id", req.TenantID.String()),
+			logger.String("product_id", req.ProductID.String()))
 		return nil, err
 	}
 
-	if err := s.stockService.Reserve(ctx, req.TenantID, req.ProductID, req.Quantity); err != nil {
+	if err := s.stockService.Reserve(ctx, req.TenantID, req.ProductID, req.FromStoreID, req.Quantity); err != nil {
+		s.logger.Error("Failed to reserve stock for transfer",
+			logger.Error(err),
+			logger.String("tenant_id", req.TenantID.String()),
+			logger.String("product_id", req.ProductID.String()),
+			logger.String("store_id", req.FromStoreID.String()),
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.Int("quantity", req.Quantity))
 		return nil, err
 	}
+
+	s.logger.Info("Transfer created successfully",
+		logger.String("transfer_id", transfer.ID.String()),
+		logger.String("tenant_id", req.TenantID.String()),
+		logger.String("product_id", req.ProductID.String()),
+		logger.String("from_store_id", req.FromStoreID.String()),
+		logger.String("to_store_id", req.ToStoreID.String()),
+		logger.Int("quantity", req.Quantity),
+		logger.String("status", string(transfer.Status)))
 
 	return transfer, nil
 }
 
 func (s *Service) GetByID(ctx context.Context, tenantID, id uuid.UUID) (*entities.Transfer, error) {
-	return s.repo.GetByID(ctx, tenantID, id)
+	transfer, err := s.repo.GetByID(ctx, tenantID, id)
+	if err != nil {
+		if err == entities.ErrTransferNotFound {
+			s.logger.Warn("Transfer not found",
+				logger.String("transfer_id", id.String()),
+				logger.String("tenant_id", tenantID.String()))
+		} else {
+			s.logger.Error("Failed to get transfer by ID",
+				logger.Error(err),
+				logger.String("transfer_id", id.String()),
+				logger.String("tenant_id", tenantID.String()))
+		}
+		return nil, err
+	}
+
+	return transfer, nil
 }
 
 func (s *Service) List(ctx context.Context, tenantID uuid.UUID, status *entities.TransferStatus, storeID *uuid.UUID, limit, offset int) ([]*entities.Transfer, error) {
@@ -103,16 +166,38 @@ func (s *Service) List(ctx context.Context, tenantID uuid.UUID, status *entities
 		offset = 0
 	}
 
-	return s.repo.List(ctx, tenantID, status, storeID, limit, offset)
+	transfers, err := s.repo.List(ctx, tenantID, status, storeID, limit, offset)
+	if err != nil {
+		s.logger.Error("Failed to list transfers",
+			logger.Error(err),
+			logger.String("tenant_id", tenantID.String()))
+		return nil, err
+	}
+
+	return transfers, nil
 }
 
 func (s *Service) Update(ctx context.Context, req UpdateRequest) (*entities.Transfer, error) {
 	transfer, err := s.repo.GetByID(ctx, req.TenantID, req.ID)
 	if err != nil {
+		if err == entities.ErrTransferNotFound {
+			s.logger.Warn("Transfer not found for update",
+				logger.String("transfer_id", req.ID.String()),
+				logger.String("tenant_id", req.TenantID.String()))
+		} else {
+			s.logger.Error("Failed to get transfer for update",
+				logger.Error(err),
+				logger.String("transfer_id", req.ID.String()),
+				logger.String("tenant_id", req.TenantID.String()))
+		}
 		return nil, err
 	}
 
 	if !transfer.CanUpdate() {
+		s.logger.Warn("Transfer cannot be updated, not in pending status",
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", req.TenantID.String()),
+			logger.String("current_status", string(transfer.Status)))
 		return nil, entities.ErrTransferNotPending
 	}
 
@@ -138,12 +223,22 @@ func (s *Service) Update(ctx context.Context, req UpdateRequest) (*entities.Tran
 			toStoreID = *req.ToStoreID
 		}
 		if err := s.validateStoresBelongToTenant(ctx, req.TenantID, fromStoreID, toStoreID); err != nil {
+			s.logger.Warn("Stores validation failed during update",
+				logger.Error(err),
+				logger.String("transfer_id", transfer.ID.String()),
+				logger.String("tenant_id", req.TenantID.String()),
+				logger.String("from_store_id", fromStoreID.String()),
+				logger.String("to_store_id", toStoreID.String()))
 			return nil, err
 		}
 	}
 
 	if req.Quantity != nil {
 		if *req.Quantity <= 0 {
+			s.logger.Warn("Invalid quantity in transfer update",
+				logger.String("transfer_id", transfer.ID.String()),
+				logger.String("tenant_id", req.TenantID.String()),
+				logger.Int("quantity", *req.Quantity))
 			return nil, entities.ErrInvalidQuantity
 		}
 		transfer.Quantity = *req.Quantity
@@ -154,12 +249,26 @@ func (s *Service) Update(ctx context.Context, req UpdateRequest) (*entities.Tran
 	}
 
 	if transfer.FromStoreID == transfer.ToStoreID {
+		s.logger.Warn("Invalid transfer stores, from and to stores are the same",
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", req.TenantID.String()),
+			logger.String("store_id", transfer.FromStoreID.String()))
 		return nil, entities.ErrInvalidTransferStores
 	}
 
 	if err := s.repo.Update(ctx, transfer); err != nil {
+		s.logger.Error("Failed to update transfer in repository",
+			logger.Error(err),
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", req.TenantID.String()))
 		return nil, err
 	}
+
+	s.logger.Info("Transfer updated successfully",
+		logger.String("transfer_id", transfer.ID.String()),
+		logger.String("tenant_id", req.TenantID.String()),
+		logger.String("status", string(transfer.Status)),
+		logger.Int("quantity", transfer.Quantity))
 
 	return transfer, nil
 }
@@ -167,25 +276,94 @@ func (s *Service) Update(ctx context.Context, req UpdateRequest) (*entities.Tran
 func (s *Service) Complete(ctx context.Context, tenantID, id uuid.UUID) (*entities.Transfer, error) {
 	transfer, err := s.repo.GetByID(ctx, tenantID, id)
 	if err != nil {
+		if err == entities.ErrTransferNotFound {
+			s.logger.Warn("Transfer not found for completion",
+				logger.String("transfer_id", id.String()),
+				logger.String("tenant_id", tenantID.String()))
+		} else {
+			s.logger.Error("Failed to get transfer for completion",
+				logger.Error(err),
+				logger.String("transfer_id", id.String()),
+				logger.String("tenant_id", tenantID.String()))
+		}
 		return nil, err
 	}
 
 	if transfer.IsCompleted() {
+		s.logger.Warn("Transfer already completed",
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()))
 		return nil, entities.ErrTransferAlreadyCompleted
 	}
 
 	if transfer.IsCancelled() {
+		s.logger.Warn("Transfer already cancelled, cannot complete",
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()))
 		return nil, entities.ErrTransferAlreadyCancelled
 	}
 
 	transfer.Status = entities.TransferStatusCompleted
 	if err := s.repo.Update(ctx, transfer); err != nil {
+		s.logger.Error("Failed to update transfer status to completed",
+			logger.Error(err),
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()))
 		return nil, err
 	}
 
-	if err := s.stockService.Release(ctx, tenantID, transfer.ProductID, transfer.Quantity); err != nil {
+	if err := s.stockService.Release(ctx, tenantID, transfer.ProductID, transfer.FromStoreID, transfer.Quantity); err != nil {
+		s.logger.Error("Failed to release stock for completed transfer",
+			logger.Error(err),
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()),
+			logger.String("product_id", transfer.ProductID.String()),
+			logger.String("from_store_id", transfer.FromStoreID.String()),
+			logger.Int("quantity", transfer.Quantity))
 		return nil, err
 	}
+
+	fromAdjustReq := stock.AdjustRequest{
+		TenantID:  tenantID,
+		ProductID: transfer.ProductID,
+		StoreID:   transfer.FromStoreID,
+		Amount:    -transfer.Quantity,
+	}
+	if _, err := s.stockService.Adjust(ctx, fromAdjustReq); err != nil {
+		s.logger.Error("Failed to reduce stock in source store",
+			logger.Error(err),
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()),
+			logger.String("product_id", transfer.ProductID.String()),
+			logger.String("from_store_id", transfer.FromStoreID.String()),
+			logger.Int("quantity", transfer.Quantity))
+		return nil, err
+	}
+
+	toAdjustReq := stock.AdjustRequest{
+		TenantID:  tenantID,
+		ProductID: transfer.ProductID,
+		StoreID:   transfer.ToStoreID,
+		Amount:    transfer.Quantity,
+	}
+	if _, err := s.stockService.Adjust(ctx, toAdjustReq); err != nil {
+		s.logger.Error("Failed to adjust stock in destination store",
+			logger.Error(err),
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()),
+			logger.String("product_id", transfer.ProductID.String()),
+			logger.String("to_store_id", transfer.ToStoreID.String()),
+			logger.Int("quantity", transfer.Quantity))
+		return nil, err
+	}
+
+	s.logger.Info("Transfer completed successfully",
+		logger.String("transfer_id", transfer.ID.String()),
+		logger.String("tenant_id", tenantID.String()),
+		logger.String("product_id", transfer.ProductID.String()),
+		logger.String("from_store_id", transfer.FromStoreID.String()),
+		logger.String("to_store_id", transfer.ToStoreID.String()),
+		logger.Int("quantity", transfer.Quantity))
 
 	return transfer, nil
 }
@@ -193,25 +371,59 @@ func (s *Service) Complete(ctx context.Context, tenantID, id uuid.UUID) (*entiti
 func (s *Service) Cancel(ctx context.Context, tenantID, id uuid.UUID) (*entities.Transfer, error) {
 	transfer, err := s.repo.GetByID(ctx, tenantID, id)
 	if err != nil {
+		if err == entities.ErrTransferNotFound {
+			s.logger.Warn("Transfer not found for cancellation",
+				logger.String("transfer_id", id.String()),
+				logger.String("tenant_id", tenantID.String()))
+		} else {
+			s.logger.Error("Failed to get transfer for cancellation",
+				logger.Error(err),
+				logger.String("transfer_id", id.String()),
+				logger.String("tenant_id", tenantID.String()))
+		}
 		return nil, err
 	}
 
 	if transfer.IsCompleted() {
+		s.logger.Warn("Transfer already completed, cannot cancel",
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()))
 		return nil, entities.ErrTransferAlreadyCompleted
 	}
 
 	if transfer.IsCancelled() {
+		s.logger.Warn("Transfer already cancelled",
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()))
 		return nil, entities.ErrTransferAlreadyCancelled
 	}
 
 	transfer.Status = entities.TransferStatusCancelled
 	if err := s.repo.Update(ctx, transfer); err != nil {
+		s.logger.Error("Failed to update transfer status to cancelled",
+			logger.Error(err),
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()))
 		return nil, err
 	}
 
-	if err := s.stockService.Release(ctx, tenantID, transfer.ProductID, transfer.Quantity); err != nil {
+	if err := s.stockService.Release(ctx, tenantID, transfer.ProductID, transfer.FromStoreID, transfer.Quantity); err != nil {
+		s.logger.Error("Failed to release stock for cancelled transfer",
+			logger.Error(err),
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()),
+			logger.String("product_id", transfer.ProductID.String()),
+			logger.Int("quantity", transfer.Quantity))
 		return nil, err
 	}
+
+	s.logger.Info("Transfer cancelled successfully",
+		logger.String("transfer_id", transfer.ID.String()),
+		logger.String("tenant_id", tenantID.String()),
+		logger.String("product_id", transfer.ProductID.String()),
+		logger.String("from_store_id", transfer.FromStoreID.String()),
+		logger.String("to_store_id", transfer.ToStoreID.String()),
+		logger.Int("quantity", transfer.Quantity))
 
 	return transfer, nil
 }
@@ -219,14 +431,43 @@ func (s *Service) Cancel(ctx context.Context, tenantID, id uuid.UUID) (*entities
 func (s *Service) Delete(ctx context.Context, tenantID, id uuid.UUID) error {
 	transfer, err := s.repo.GetByID(ctx, tenantID, id)
 	if err != nil {
+		if err == entities.ErrTransferNotFound {
+			s.logger.Warn("Transfer not found for deletion",
+				logger.String("transfer_id", id.String()),
+				logger.String("tenant_id", tenantID.String()))
+		} else {
+			s.logger.Error("Failed to get transfer for deletion",
+				logger.Error(err),
+				logger.String("transfer_id", id.String()),
+				logger.String("tenant_id", tenantID.String()))
+		}
 		return err
 	}
 
 	if !transfer.CanDelete() {
+		s.logger.Warn("Transfer cannot be deleted, not in pending status",
+			logger.String("transfer_id", transfer.ID.String()),
+			logger.String("tenant_id", tenantID.String()),
+			logger.String("current_status", string(transfer.Status)))
 		return entities.ErrTransferNotPending
 	}
 
-	return s.repo.Delete(ctx, tenantID, id)
+	err = s.repo.Delete(ctx, tenantID, id)
+	if err != nil {
+		s.logger.Error("Failed to delete transfer from repository",
+			logger.Error(err),
+			logger.String("transfer_id", id.String()),
+			logger.String("tenant_id", tenantID.String()))
+		return err
+	}
+
+	s.logger.Info("Transfer deleted successfully",
+		logger.String("transfer_id", id.String()),
+		logger.String("tenant_id", tenantID.String()),
+		logger.String("product_id", transfer.ProductID.String()),
+		logger.Int("quantity", transfer.Quantity))
+
+	return nil
 }
 
 func (s *Service) validateCreateRequest(req CreateRequest) error {

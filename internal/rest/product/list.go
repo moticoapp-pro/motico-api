@@ -66,7 +66,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	responses := make([]restentities.ProductResponse, len(products))
 	for i, p := range products {
-		stockInfo, _ := h.stockService.GetByProductID(r.Context(), tenantID, p.ID)
+		stockInfo, _ := h.stockService.GetByProductIDAndStoreID(r.Context(), tenantID, p.ID, p.StoreID)
 		response := restentities.ProductResponse{
 			ID:          p.ID,
 			TenantID:    p.TenantID,

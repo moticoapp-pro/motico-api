@@ -1,0 +1,125 @@
+{
+	"info": {
+		"name": "Stock API - Updated",
+		"description": "Stock endpoints with store_id support",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Stock Total + Breakdown by Store",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Tenant-ID",
+						"value": "{{tenantId}}"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products/{{productId}}/stock",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "products", "{{productId}}", "stock"]
+				},
+				"description": "Get total stock + breakdown by store for a product"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Stock by Store",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Tenant-ID",
+						"value": "{{tenantId}}"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products/{{productId}}/stock?store_id={{storeId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "products", "{{productId}}", "stock"],
+					"query": [
+						{
+							"key": "store_id",
+							"value": "{{storeId}}",
+							"description": "Store ID to filter by",
+							"disabled": false
+						}
+					]
+				},
+				"description": "Get stock for a specific product in a specific store. Make sure to change {{storeId}} variable to see different stores."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Stock",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "X-Tenant-ID",
+						"value": "{{tenantId}}"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"store_id\": \"{{storeId}}\",\n  \"quantity\": 100\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products/{{productId}}/stock",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "products", "{{productId}}", "stock"]
+				},
+				"description": "Set the stock quantity for a product in a specific store. Requires store_id in body."
+			},
+			"response": []
+		},
+		{
+			"name": "Adjust Stock",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "X-Tenant-ID",
+						"value": "{{tenantId}}"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"store_id\": \"{{storeId}}\",\n  \"amount\": 10\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products/{{productId}}/stock",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "products", "{{productId}}", "stock"]
+				},
+				"description": "Add or subtract quantity from stock (amount can be positive or negative) for a specific store. Requires store_id in body."
+			},
+			"response": []
+		}
+	]
+}
