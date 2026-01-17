@@ -74,7 +74,7 @@ func Load(configPath string) (*Config, error) {
 		// Try relative to the config package directory (which is in the project root)
 		projectRoot := filepath.Dir(packageDir)
 		altPath := filepath.Join(projectRoot, cleanPath)
-		
+
 		var altErr error
 		file, altErr = os.Open(altPath)
 		if altErr != nil {

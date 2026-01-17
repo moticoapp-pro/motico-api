@@ -7,9 +7,9 @@ import (
 )
 
 type Handler struct {
-	service      *stock.Service
+	service        *stock.Service
 	productService *product.Service
-	config       *config.Config
+	config         *config.Config
 }
 
 func NewHandler(service *stock.Service, productService *product.Service, cfg *config.Config) *Handler {

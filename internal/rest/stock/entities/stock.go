@@ -15,14 +15,14 @@ type AdjustStockRequest struct {
 }
 
 type StockResponse struct {
-	ID                uuid.UUID      `json:"id"`
-	TenantID          uuid.UUID      `json:"tenant_id"`
-	ProductID         uuid.UUID      `json:"product_id"`
-	Quantity          int            `json:"quantity"`
-	ReservedQuantity  int            `json:"reserved_quantity"`
-	AvailableQuantity int            `json:"available_quantity"`
-	UpdatedAt         time.Time      `json:"updated_at"`
-	Product           *ProductInfo   `json:"product,omitempty"`
+	ID                uuid.UUID    `json:"id"`
+	TenantID          uuid.UUID    `json:"tenant_id"`
+	ProductID         uuid.UUID    `json:"product_id"`
+	Quantity          int          `json:"quantity"`
+	ReservedQuantity  int          `json:"reserved_quantity"`
+	AvailableQuantity int          `json:"available_quantity"`
+	UpdatedAt         time.Time    `json:"updated_at"`
+	Product           *ProductInfo `json:"product,omitempty"`
 }
 
 type ProductInfo struct {
